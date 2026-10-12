@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fake E-Commerce Site — Tracker Test</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #f8f9fa;
+      color: #1a1a1a;
+    }
+    header {
+      background: #1a1a1a;
+      color: white;
+      padding: 14px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    header .logo { font-size: 1.4rem; font-weight: 700; letter-spacing: -0.5px; }
+    header nav a {
+      color: #ccc;
+      text-decoration: none;
+      margin-left: 24px;
+      font-size: 0.9rem;
+    }
+    header nav a:hover { color: white; }
+    .hero {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      text-align: center;
+      padding: 80px 32px;
+    }
+    .hero h1 { font-size: 2.8rem; font-weight: 800; margin-bottom: 16px; }
+    .hero p { font-size: 1.1rem; opacity: 0.85; max-width: 480px; margin: 0 auto 32px; }
+    .hero-btn {
+      display: inline-block;
+      padding: 16px 36px;
+      background: white;
+      color: #764ba2;
+      font-weight: 700;
+      font-size: 1rem;
+      border-radius: 50px;
+      text-decoration: none;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .hero-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.2); }
+    .products {
+      max-width: 1100px;
+      margin: 60px auto;
+      padding: 0 24px;
+    }
+    .products h2 { font-size: 1.8rem; font-weight: 700; margin-bottom: 32px; }
+    .product-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 24px;
+    }
+    .product-card {
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+      transition: transform 0.2s, box-shadow 0.2s;
+      cursor: pointer;
+    }
+    .product-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    }
+    .product-img {
+      height: 180px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 4rem;
+      background: #f0f0f0;
+    }
+    .product-info { padding: 16px; }
+    .product-info h3 { font-size: 1rem; font-weight: 600; margin-bottom: 8px; }
+    .product-info .price { color: #667eea; font-weight: 700; font-size: 1.1rem; }
+    .product-info button {
+      width: 100%;
+      margin-top: 12px;
+      padding: 10px;
+      background: #1a1a1a;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .product-info button:hover { background: #333; }
+    .tracker-info {
+      background: #1a1a1a;
+      color: white;
+      text-align: center;
+      padding: 24px;
+      font-size: 0.85rem;
+      margin-top: 60px;
+    }
+    .tracker-info span { color: #a78bfa; font-family: monospace; }
+    .event-log {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: rgba(0,0,0,0.85);
+      color: #4ade80;
+      font-family: monospace;
+      font-size: 0.75rem;
+      padding: 14px;
+      border-radius: 10px;
+      max-width: 320px;
+      max-height: 180px;
+      overflow-y: auto;
+      z-index: 9999;
+    }
+    .event-log .title { color: white; font-weight: bold; margin-bottom: 8px; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="logo">🛍️ ShopFake</div>
+    <nav>
+      <a id="nav-home" href="#">Home</a>
+      <a id="nav-products" href="#products">Products</a>
+      <a id="nav-contact" href="#">Contact</a>
+    </nav>
+  </header>
+
+  <section class="hero">
+    <h1>Welcome to ShopFake</h1>
+    <p>A fake e-commerce site to demonstrate CausalFunnel analytics running on an external domain.</p>
+    <a id="hero-shop-now" class="hero-btn" href="#products">Shop Now</a>
+  </section>
+
+  <section class="products" id="products">
+    <h2>Featured Products</h2>
+    <div class="product-grid">
+      <div class="product-card" id="card-headphones">
+        <div class="product-img">🎧</div>
+        <div class="product-info">
+          <h3>Wireless Headphones</h3>
+          <div class="price">$89.99</div>
+          <button id="btn-buy-headphones">Add to Cart</button>
+        </div>
+      </div>
+      <div class="product-card" id="card-watch">
+        <div class="product-img">⌚</div>
+        <div class="product-info">
+          <h3>Smart Watch</h3>
+          <div class="price">$199.99</div>
+          <button id="btn-buy-watch">Add to Cart</button>
+        </div>
+      </div>
+      <div class="product-card" id="card-shoes">
+        <div class="product-img">👟</div>
+        <div class="product-info">
+          <h3>Running Shoes</h3>
+          <div class="price">$129.99</div>
+          <button id="btn-buy-shoes">Add to Cart</button>
+        </div>
+      </div>
+      <div class="product-card" id="card-laptop">
+        <div class="product-img">💻</div>
+        <div class="product-info">
+          <h3>Laptop Stand</h3>
+          <div class="price">$49.99</div>
+          <button id="btn-buy-laptop">Add to Cart</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="tracker-info">
+    CausalFunnel tracker active on this page ·
+    Sending events to <span>http://localhost:3000/api/events</span> ·
+    <a href="http://localhost:3000/dashboard" target="_blank" style="color: #a78bfa;">Open Dashboard ↗</a>
+  </div>
+
+  <div class="event-log" id="event-log">
+    <div class="title">📡 CausalFunnel Events</div>
+    <div id="log-entries">Waiting for events...</div>
+  </div>
+
+  <script src="http://localhost:3000/tracker.js" data-api="http://localhost:3000" defer></script>
+
+  <script>
+    var logEntries = document.getElementById('log-entries');
+    var count = 0;
+
+    function logEvent(type, detail) {
+      count++;
+      var entry = document.createElement('div');
+      entry.style.marginTop = '4px';
+      entry.textContent = count + '. ' + type + ' — ' + detail;
+      if (count === 1) logEntries.textContent = '';
+      logEntries.appendChild(entry);
+      logEntries.parentElement.scrollTop = logEntries.parentElement.scrollHeight;
+    }
+
+    document.addEventListener('click', function(e) {
+      var tag = e.target.tagName.toLowerCase();
+      var id = e.target.id ? '#' + e.target.id : '';
+      logEvent('click', tag + id + ' (' + Math.round(e.pageX) + ', ' + Math.round(e.pageY) + ')');
+    }, { passive: true });
+
+    window.addEventListener('load', function() {
+      logEvent('page_view', window.location.href);
+    });
+  </script>
+</body>
+</html>
