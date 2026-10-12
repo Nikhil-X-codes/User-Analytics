@@ -15,6 +15,15 @@ function isValidUrl(str) {
   }
 }
 
+function normalizeUrl(str) {
+  try {
+    const url = new URL(str);
+    return `${url.origin}${url.pathname}`;
+  } catch {
+    return str.trim();
+  }
+}
+
 export function validateAndNormalizeEvent(payload) {
   const errors = [];
 
@@ -78,7 +87,7 @@ export function validateAndNormalizeEvent(payload) {
   const doc = {
     sessionId: sessionId.trim(),
     eventType,
-    pageUrl: pageUrl.trim(),
+    pageUrl: normalizeUrl(pageUrl),
     timestamp: parsedTimestamp,
     serverReceivedAt: new Date(now),
   };
