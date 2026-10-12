@@ -44,7 +44,8 @@ export async function POST(request) {
 
   let payload;
   try {
-    payload = await request.json();
+    const raw = await request.text();
+    payload = JSON.parse(raw);
   } catch {
     return NextResponse.json(
       { success: false, error: "Request body must be valid JSON." },

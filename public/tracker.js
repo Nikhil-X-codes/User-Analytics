@@ -1,6 +1,8 @@
 (function () {
   "use strict";
 
+  var _selfScript = document.currentScript;
+
   function isTrackingAllowed() {
     try {
       if (
@@ -15,9 +17,7 @@
       if (typeof window !== "undefined" && window.__CF_ANALYTICS_OPT_OUT === true) {
         return false;
       }
-    } catch (e) {
-      /* ignore storage access restrictions */
-    }
+    } catch (e) {}
     return true;
   }
 
@@ -25,28 +25,37 @@
     return;
   }
 
-  var currentScript =
-    typeof document !== "undefined"
-      ? document.currentScript || document.querySelector('script[src*="tracker.js"]')
-      : null;
-  var customHost =
-    (currentScript && currentScript.getAttribute("data-api")) ||
-    (typeof window !== "undefined" && window.__CF_API_HOST);
-  var host = "";
-  if (currentScript && currentScript.src) {
-    try {
-      var parsed = new URL(currentScript.src, typeof window !== "undefined" ? window.location.href : undefined);
-      if (parsed.origin && parsed.origin !== "null") {
-        host = parsed.origin;
-      }
-    } catch (e) {}
+  function resolveEndpoint() {
+    var scriptEl =
+      _selfScript ||
+      document.querySelector('script[src*="tracker.js"]') ||
+      document.querySelector('script[data-api]');
+
+    var dataApi = scriptEl && scriptEl.getAttribute("data-api");
+    if (dataApi) {
+      return dataApi.replace(/\/+$/, "") + "/api/events";
+    }
+    if (scriptEl && scriptEl.src) {
+      try {
+        var srcUrl = new URL(scriptEl.src, window.location.href);
+        if (srcUrl.origin && srcUrl.origin !== "null") {
+          return srcUrl.origin + "/api/events";
+        }
+      } catch (e) {}
+    }
+    var winOrigin =
+      typeof window !== "undefined" &&
+      window.location.origin &&
+      window.location.origin !== "null"
+        ? window.location.origin
+        : "";
+    if (winOrigin) {
+      return winOrigin + "/api/events";
+    }
+    return "/api/events";
   }
-  var localOrigin =
-    typeof window !== "undefined" && window.location.origin && window.location.origin !== "null"
-      ? window.location.origin
-      : "";
-  var baseHost = customHost || host || localOrigin || "http://localhost:3000";
-  var ENDPOINT = baseHost.replace(/\/+$/, "") + "/api/events";
+
+  var ENDPOINT = resolveEndpoint();
   var STORAGE_KEY = "cf_session_id";
 
   function getSessionId() {
@@ -69,15 +78,22 @@
     try {
       var payload = JSON.stringify(data);
 
+      // sendBeacon is best for page unloads and never triggers a blocking preflight
+      if (typeof navigator !== "undefined" && typeof navigator.sendBeacon === "function") {
+        var blob = new Blob([payload], { type: "text/plain" });
+        var sent = navigator.sendBeacon(ENDPOINT, blob);
+        if (sent) return;
+      }
+
       if (typeof fetch === "function") {
         fetch(ENDPOINT, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "text/plain" },
           body: payload,
           keepalive: true,
+          mode: "cors",
+          credentials: "omit",
         }).catch(function () {});
-      } else if (typeof navigator !== "undefined" && typeof navigator.sendBeacon === "function") {
-        navigator.sendBeacon(ENDPOINT, new Blob([payload], { type: "application/json" }));
       }
     } catch (e) {}
   }
@@ -89,14 +105,11 @@
   function trackPageView() {
     var currentUrl = window.location.href;
     var now = Date.now();
-
     if (currentUrl === lastTrackedUrl && now - lastTrackedTime < 300) {
       return;
     }
-
     lastTrackedUrl = currentUrl;
     lastTrackedTime = now;
-
     sendEvent({
       sessionId: sessionId,
       eventType: "page_view",
@@ -108,7 +121,6 @@
   function trackClick(e) {
     var x = Math.round(e.pageX || 0);
     var y = Math.round(e.pageY || 0);
-
     sendEvent({
       sessionId: sessionId,
       eventType: "click",
@@ -119,20 +131,28 @@
     });
   }
 
-  trackPageView();
-  document.addEventListener("click", trackClick, { passive: true });
-
-  var _pushState = history.pushState.bind(history);
-  history.pushState = function () {
-    _pushState.apply(history, arguments);
+  function init() {
     trackPageView();
-  };
+    document.addEventListener("click", trackClick, { passive: true });
 
-  var _replaceState = history.replaceState.bind(history);
-  history.replaceState = function () {
-    _replaceState.apply(history, arguments);
-    trackPageView();
-  };
+    var _pushState = history.pushState.bind(history);
+    history.pushState = function () {
+      _pushState.apply(history, arguments);
+      trackPageView();
+    };
 
-  window.addEventListener("popstate", trackPageView);
+    var _replaceState = history.replaceState.bind(history);
+    history.replaceState = function () {
+      _replaceState.apply(history, arguments);
+      trackPageView();
+    };
+
+    window.addEventListener("popstate", trackPageView);
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
 })();

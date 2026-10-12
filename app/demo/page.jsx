@@ -10,7 +10,7 @@ export const metadata = {
 export default function DemoPage() {
   return (
     <>
-      <Script src="/tracker.js" strategy="afterInteractive" />
+      <Script src="/tracker.js" strategy="beforeInteractive" />
 
       <div className="min-h-screen bg-gray-950 text-white font-sans">
         <nav className="border-b border-white/10 backdrop-blur-sm bg-gray-950/80 sticky top-0 z-50">
