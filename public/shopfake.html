@@ -179,8 +179,8 @@
 
   <div class="tracker-info">
     CausalFunnel tracker active on this page ·
-    Sending events to <span>http://localhost:3000/api/events</span> ·
-    <a href="http://localhost:3000/dashboard" target="_blank" style="color: #a78bfa;">Open Dashboard ↗</a>
+    Sending events to <span>/api/events</span> ·
+    <a href="/dashboard" target="_blank" style="color: #a78bfa;">Open Dashboard ↗</a>
   </div>
 
   <div class="event-log" id="event-log">
@@ -188,7 +188,7 @@
     <div id="log-entries">Waiting for events...</div>
   </div>
 
-  <script src="http://localhost:3000/tracker.js" data-api="http://localhost:3000" defer></script>
+  <script src="/tracker.js" defer></script>
 
   <script>
     var logEntries = document.getElementById('log-entries');
